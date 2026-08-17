@@ -109,6 +109,16 @@ dressage.example.com {
 
 When running behind Caddy (or any reverse proxy), also add `Environment=TRUST_PROXY=1` to the systemd unit so login rate-limiting and the audit log see each visitor's real IP from `X-Forwarded-For` instead of the proxy's. Leave it unset when the app faces the internet directly — trusting that header without a proxy would let an attacker spoof their address.
 
+**Locked out / forgot a password?** Two layers of protection can bite the forgetful: five wrong guesses locks an account for **15 minutes** (the login screen says so — waiting it out works), and a forgotten password has no self-service reset by design (no email round-trip to trust). An admin can reset anyone's password from **Admin → Users**; if the *only admin* is the one locked out, use the emergency rein:
+
+```bash
+sudo systemctl stop dressage        # stop the server first — it would overwrite the change
+node server/tools/reset-password.js donna 'a-new-password'
+sudo systemctl start dressage
+```
+
+It clears any lockout, expires the account's sessions, and asks for a fresh password on next login. (On localhost: Ctrl+C the server, run the tool, start it again.)
+
 **Backups:** every scrap of data — users, scores, notes, settings, audit log, and the mail outbox — lives in **`server/data/`** (a JSON database plus `.eml` files). Back up that one folder and you've backed up the whole barn:
 
 ```bash
