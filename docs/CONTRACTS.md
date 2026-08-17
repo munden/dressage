@@ -230,3 +230,26 @@ Hand-crafted pixel-art **SVGs** (grid-of-rects or crisp paths, `shape-rendering:
 - Escape all user content (`DR.esc`). Server validates types/lengths. Never leak passHash/salt/smtp.pass.
 - Empty states are charming ("No rides yet — the arena is freshly dragged."). Errors are friendly + punny but never lose data.
 - Code readable, small helpers over cleverness. Comments only where non-obvious.
+
+---
+
+## 7b. ADDENDUM — 4× resolution art remaster (three agents under contract)
+
+All pixel art is remastered at **4× grid resolution** with real added detail (shading bands,
+musculature, tack, mane/tail strands) — NOT naive upscaling. BINDING for every agent:
+keep the exact same filenames, the same aspect ratios, `shape-rendering="crispEdges"`,
+the warm palette (saddle brown #7a4a21, gold #e8a33d, sand/cream, dark ink — closely
+related shades for shading are allowed), and merge horizontal same-color pixel runs into
+single rects (keep each file under ~200KB). sprites.css and horse.js are proportional and
+must NOT need changes: frame counts and aspect are frozen.
+
+| Agent | Owns | Geometry (frozen) |
+|---|---|---|
+| art-horses | horse-trot-sprite.svg, horse-piaffe-sprite.svg, horse-idle.svg | frames 128×96; trot 8 frames (viewBox 0 0 1024 96), piaffe 6 (768×96), idle 4 (512×96) — idle frame order: neutral / blink / tail-flick / ears-back |
+| art-icons | logo.svg, favicon.svg, horseshoe.svg, ribbon.svg, saddle.svg, trophy.svg | each 64×64 (viewBox 0 0 64 64) |
+| art-arena | arena-bg.svg | 768×432 (16:9) |
+
+Every art agent MUST render-verify its own work: screenshot the SVGs in Chromium
+(playwright-core is at the scratchpad node_modules; executablePath
+/opt/pw-browsers/chromium-1194/chrome-linux/chrome), LOOK at the screenshot with the
+Read tool, and iterate until it genuinely reads as AAA pixel art at both small and large sizes.
