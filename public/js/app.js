@@ -5,8 +5,10 @@
 (function () {
   'use strict';
 
-  var DR = {};
-  window.DR = DR;
+  // fun.js and horse.js load before us and hang their goodies on window.DR —
+  // extend that object rather than replacing it (replacing would trample
+  // DR.pun, DR.confetti, DR.initEggs, DR.horseTransition, …).
+  var DR = window.DR = window.DR || {};
 
   /* ---------------- state ---------------- */
   DR.user = null;
@@ -718,9 +720,17 @@
     ]).then(function (results) {
       if (!root.isConnected) return; // user already trotted elsewhere
 
-      var events = results[0].status === 'fulfilled' && Array.isArray(results[0].value) ? results[0].value : [];
-      var notes = results[1].status === 'fulfilled' && Array.isArray(results[1].value) ? results[1].value : [];
-      var rides = results[2].status === 'fulfilled' && Array.isArray(results[2].value) ? results[2].value : null;
+      // API responses are wrapped: {events:[]}, {notes:[]}, {rides:[]}.
+      function listOf(result, key) {
+        if (result.status !== 'fulfilled' || !result.value) return null;
+        var v = result.value;
+        if (Array.isArray(v)) return v;
+        if (Array.isArray(v[key])) return v[key];
+        return null;
+      }
+      var events = listOf(results[0], 'events') || [];
+      var notes = listOf(results[1], 'notes') || [];
+      var rides = listOf(results[2], 'rides');
 
       // --- stats ---
       var upcoming = events.filter(function (e) { return e && e.date >= today; });

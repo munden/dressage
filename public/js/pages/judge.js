@@ -650,7 +650,7 @@
       eventId: S.setup.eventId || null,
       rider: S.setup.rider.trim(),
       horse: S.setup.horse.trim(),
-      date: Date.now(),
+      date: new Date().toISOString().slice(0, 10), // server contract: YYYY-MM-DD
       status: 'in-progress',
       scores: {}, collectives: {}, errors: 0, furtherRemarks: ''
     };

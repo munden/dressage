@@ -87,8 +87,9 @@
   function loadEvents(force) {
     if (eventsCache && !force) return Promise.resolve(eventsCache);
     if (eventsPromise && !force) return eventsPromise;
-    eventsPromise = DR.api('GET', '/api/events').then(function (list) {
-      eventsCache = (Array.isArray(list) ? list : []).slice().sort(function (a, b) {
+    eventsPromise = DR.api('GET', '/api/events').then(function (res) {
+      var list = Array.isArray(res) ? res : (res && res.events) || [];
+      eventsCache = list.slice().sort(function (a, b) {
         return (a.date + 'T' + (a.start || '')) < (b.date + 'T' + (b.start || '')) ? -1 : 1;
       });
       eventsPromise = null;
@@ -102,8 +103,8 @@
 
   function loadTests() {
     if (testsCache) return Promise.resolve(testsCache);
-    return DR.api('GET', '/api/tests').then(function (list) {
-      testsCache = Array.isArray(list) ? list : [];
+    return DR.api('GET', '/api/tests').then(function (res) {
+      testsCache = Array.isArray(res) ? res : (res && res.tests) || [];
       return testsCache;
     }, function () { testsCache = []; return testsCache; });
   }

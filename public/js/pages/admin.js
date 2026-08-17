@@ -268,7 +268,7 @@
         });
         var unlockBtn = card.querySelector('[data-act=unlock]');
         if (unlockBtn) unlockBtn.addEventListener('click', function () {
-          DR.api('PUT', '/api/users/' + u.id, { lockedUntil: 0, failedAttempts: 0 }).then(function () {
+          DR.api('PUT', '/api/users/' + u.id, { unlock: true }).then(function () {
             DR.toast(u.username + ' is back out of the stocks.', 'ok');
             renderUsers(body);
           }).catch(function (e) { apiErr(e, 'Could not unlock user.'); });
@@ -298,9 +298,10 @@
 
   function renderSmtp(body) {
     body.innerHTML = loadingHTML();
-    DR.api('GET', '/api/settings').then(function (settings) {
+    DR.api('GET', '/api/settings').then(function (res) {
       if (!state.alive || state.tab !== 'smtp') return;
-      var smtp = (settings && settings.smtp) || {};
+      var settings = (res && res.settings) || res || {};
+      var smtp = settings.smtp || {};
       var hasPass = smtp.pass === '••••' || !!smtp.pass;
 
       body.innerHTML = '';
@@ -385,12 +386,18 @@
    * ------------------------------------------------------------------ */
 
   function loadRefData() {
+    // API responses are wrapped: {tests:[]}, {events:[]}, {rides:[]}.
+    var unwrap = function (key) {
+      return function (res) {
+        return Array.isArray(res) ? res : (res && res[key]) || [];
+      };
+    };
     var jobs = [];
     jobs.push(state.cache.tests ? Promise.resolve(state.cache.tests) :
-      DR.api('GET', '/api/tests').then(function (t) { state.cache.tests = t; return t; }));
+      DR.api('GET', '/api/tests').then(unwrap('tests')).then(function (t) { state.cache.tests = t; return t; }));
     jobs.push(state.cache.events ? Promise.resolve(state.cache.events) :
-      DR.api('GET', '/api/events').then(function (t) { state.cache.events = t; return t; }));
-    jobs.push(DR.api('GET', '/api/rides'));
+      DR.api('GET', '/api/events').then(unwrap('events')).then(function (t) { state.cache.events = t; return t; }));
+    jobs.push(DR.api('GET', '/api/rides').then(unwrap('rides')));
     return Promise.all(jobs);
   }
 
@@ -671,9 +678,10 @@
 
   function renderSettings(body) {
     body.innerHTML = loadingHTML();
-    DR.api('GET', '/api/settings').then(function (settings) {
+    DR.api('GET', '/api/settings').then(function (res) {
       if (!state.alive || state.tab !== 'settings') return;
-      var app = (settings && settings.app) || {};
+      var settings = (res && res.settings) || res || {};
+      var app = settings.app || {};
 
       body.innerHTML = '';
       var panel = el('<div class="panel adm-card">' +
