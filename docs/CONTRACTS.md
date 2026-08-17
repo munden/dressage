@@ -253,3 +253,46 @@ Every art agent MUST render-verify its own work: screenshot the SVGs in Chromium
 (playwright-core is at the scratchpad node_modules; executablePath
 /opt/pw-browsers/chromium-1194/chrome-linux/chrome), LOOK at the screenshot with the
 Read tool, and iterate until it genuinely reads as AAA pixel art at both small and large sizes.
+
+---
+
+## 6c. ADDENDUM — Ride Board (visual rides component)
+
+New page module `public/js/pages/rides.js` (agent: rides-viz), registered as
+`DR.registerPage('rides', { title:'Rides', icon:'assets/ribbon.svg' or emoji, order:25, roles:['judge','admin'] })`.
+The shell integrator adds the script tag to index.html. Everything else per §5/§6 conventions
+(classic IIFE, DR interface only, DR.esc all user content, pixel.css tokens, mobile-first 390px).
+
+**Purpose:** a visual board of all rides — completed and in progress — that is DETAILED AND
+ACCURATE to the judge's per-movement notes. Data: GET `/api/rides` (+ `/api/tests` for movement
+names/coefficients, `/api/events` for context). Ride shape per §2 db.js: `scores:{[movementNum]:{score,note}}`,
+`collectives:{[key]:{score,note}}`, `errors`, `furtherRemarks`, `finalPct`, `status`.
+
+**Board view:** two lanes — "In the arena" (status 'in-progress', sorted newest) and "Final salutes"
+(status 'final', sorted newest). Each ride card: rider ON horse, test shortName, date, judge name,
+and a compact **score strip** — one pixel bar per movement in test order (height = score 0–10,
+coefficient-2 bars rendered double-width, unscored movements as hollow/dashed stubs) — plus
+final % (final) or "n/N scored · running %" (in-progress). Filters: status chips, test select,
+search rider/horse. Charming empty states.
+
+**Detail view (tap a card):** the heart of the feature —
+- Header: rider/horse/test/date/judge, status badge, big final or running %, error count with the
+  −2/−4/elim math shown, medal-tier pun line.
+- **Movement profile chart:** horizontal-scroll-free vertical bar chart of every movement (0–10
+  y-scale with gridlines at 5 and 7), bars colored by score band using EXISTING tokens:
+  &lt;5 `--red`, 5–6.5 `--gold`, ≥7 `--green`, 10 = gold with sparkle ✦; coefficient-2 marked ×2;
+  unscored = hollow. Tap/click a bar highlights it AND scrolls its note row into view (and vice versa).
+- **The judge's card, verbatim:** a row per movement — number, name (truncable), directive on
+  expand, score (large, half-points as "6½"), coefficient, and the judge's note text EXACTLY as
+  entered (never paraphrased; empty note = quiet em-dash). Quick-note chips stored in the note
+  string render as chips when they match `DR_DEFAULTS.quickNotes` phrases; free text stays text.
+- Collectives block with the same treatment + furtherRemarks panel ("Judge's remarks").
+- Actions: open `/api/report/ride/:id.html` / `.csv`; in-progress rides get "Resume scoring" →
+  `DR.navigate('judge')` (judge.js resumes from its landing list).
+- A tiny **score distribution** strip (count of marks per band) and best/hardest movement callouts.
+
+Accessibility & polish: bars have aria-labels ("Mvt 7, Free walk, 8 of 10, coefficient 2"),
+color bands are redundant with numeric labels (never color-only), respects reduced motion,
+no horizontal page scroll at 390px, bar chart itself may scroll inside its own container if a
+test has 15 movements. Live-update: poll `/api/rides` every 20s while the page is visible
+(visibilitychange-aware) so an in-progress ride's bars fill in near-live.
