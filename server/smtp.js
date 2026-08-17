@@ -396,17 +396,21 @@ function readJsonBody(req) {
   }
   return new Promise((resolve, reject) => {
     let size = 0;
+    let overflowed = false;
     const chunks = [];
     req.on('data', (c) => {
+      if (overflowed) return; // drain + discard so the 413 can still be delivered
       size += c.length;
       if (size > BODY_LIMIT) {
+        overflowed = true;
+        chunks.length = 0;
         reject(Object.assign(new Error('Body too large'), { status: 413 }));
-        req.destroy();
         return;
       }
       chunks.push(c);
     });
     req.on('end', () => {
+      if (overflowed) return;
       const raw = Buffer.concat(chunks).toString('utf8');
       if (!raw) return resolve({});
       try { resolve(JSON.parse(raw)); }

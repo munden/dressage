@@ -98,17 +98,20 @@ function readBody(req) {
   return new Promise((resolve, reject) => {
     const chunks = [];
     let size = 0;
+    let overflowed = false;
     req.on('data', (chunk) => {
+      if (overflowed) return; // keep draining, but discard — the 413 is already on its way
       size += chunk.length;
       if (size > BODY_LIMIT) {
+        overflowed = true;
+        chunks.length = 0;
         reject(Object.assign(new Error('Body too large'), { status: 413 }));
-        req.destroy();
         return;
       }
       chunks.push(chunk);
     });
-    req.on('end', () => resolve(Buffer.concat(chunks)));
-    req.on('error', reject);
+    req.on('end', () => { if (!overflowed) resolve(Buffer.concat(chunks)); });
+    req.on('error', (err) => { if (!overflowed) reject(err); });
   });
 }
 
@@ -839,8 +842,11 @@ async function handleApi(req, res, url) {
     try {
       raw = await readBody(req);
     } catch (err) {
-      return sendJSON(res, err.status === 413 ? 413 : 400, {
-        error: err.status === 413 ? 'That payload is more than one horse can carry (1MB limit).' : 'Could not read request body.'
+      const code = err.status === 413 ? 413 : 400;
+      // Close the connection after the reply so we stop swallowing the oversized upload.
+      if (code === 413 && !res.headersSent) res.setHeader('Connection', 'close');
+      return sendJSON(res, code, {
+        error: code === 413 ? 'That payload is more than one horse can carry (1MB limit).' : 'Could not read request body.'
       });
     }
     if (raw.length) {
@@ -973,6 +979,17 @@ const server = http.createServer(async (req, res) => {
       res.end();
     }
   }
+});
+
+server.on('error', (err) => {
+  // Fail fast and loud — without this, a second instance would die via the
+  // uncaughtException hook and could clobber db.json with its stale copy.
+  if (err && err.code === 'EADDRINUSE') {
+    console.error(`[server] Port ${PORT} is already taken — is another Pixel Passage cantering? Exiting without touching the db.`);
+  } else {
+    console.error('[server] listen failed:', err && err.message);
+  }
+  process.exit(1);
 });
 
 server.listen(PORT, () => {

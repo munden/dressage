@@ -39,8 +39,13 @@ function verify(pw, salt, hash) {
 // ------------------------------------------------------------------ helpers
 
 function clientIp(req) {
-  const fwd = req.headers['x-forwarded-for'];
-  if (fwd) return String(fwd).split(',')[0].trim();
+  // Only honor X-Forwarded-For behind a trusted reverse proxy (TRUST_PROXY=1).
+  // Otherwise an attacker could spoof the header to sidestep the per-IP damper
+  // (or frame another stable's IP). Direct connections use the socket address.
+  if (process.env.TRUST_PROXY) {
+    const fwd = req.headers['x-forwarded-for'];
+    if (fwd) return String(fwd).split(',')[0].trim();
+  }
   return (req.socket && req.socket.remoteAddress) || 'unknown';
 }
 

@@ -11,8 +11,12 @@ const MAX_ENTRIES = 5000;
 
 function ipOf(req) {
   if (!req) return '';
-  const fwd = req.headers && req.headers['x-forwarded-for'];
-  if (fwd) return String(fwd).split(',')[0].trim();
+  // Match auth.clientIp: only trust X-Forwarded-For behind a declared proxy,
+  // so an attacker can't plant a fake IP in the audit trail.
+  if (process.env.TRUST_PROXY) {
+    const fwd = req.headers && req.headers['x-forwarded-for'];
+    if (fwd) return String(fwd).split(',')[0].trim();
+  }
   return (req.socket && req.socket.remoteAddress) || '';
 }
 

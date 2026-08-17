@@ -107,6 +107,8 @@ dressage.example.com {
 }
 ```
 
+When running behind Caddy (or any reverse proxy), also add `Environment=TRUST_PROXY=1` to the systemd unit so login rate-limiting and the audit log see each visitor's real IP from `X-Forwarded-For` instead of the proxy's. Leave it unset when the app faces the internet directly — trusting that header without a proxy would let an attacker spoof their address.
+
 **Backups:** every scrap of data — users, scores, notes, settings, audit log, and the mail outbox — lives in **`server/data/`** (a JSON database plus `.eml` files). Back up that one folder and you've backed up the whole barn:
 
 ```bash
