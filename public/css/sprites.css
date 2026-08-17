@@ -1,0 +1,141 @@
+/* ==========================================================================
+   PIXEL PASSAGE — sprites.css (pixelart agent)
+   steps() sprite animation for the hand-crafted horse sheets + the DOM the
+   horse.js runtime builds (page-transition curtain, parade, idle mount).
+   Frames are 32x24 px art; --spr-size is the rendered width of ONE frame,
+   height is always size * 24/32. Override --spr-size to scale any horse.
+   ========================================================================== */
+
+.crisp {
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+}
+
+/* --- sprite sheets --------------------------------------------------------
+   trot:   8 frames  (diagonal pairs, passage lift, 2 suspension frames)
+   piaffe: 6 frames  (trot on the spot)
+   idle:   4 frames  (neutral / blink / tail-flick / ears-back), JS-stepped */
+
+.spr-horse-trot,
+.spr-horse-piaffe,
+.spr-horse-idle {
+  --spr-size: 64px;
+  display: inline-block;
+  width: var(--spr-size);
+  height: calc(var(--spr-size) * 0.75);
+  background-repeat: no-repeat;
+  background-position: 0 0;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+}
+
+.spr-horse-trot {
+  background-image: url(../assets/horse-trot-sprite.svg);
+  background-size: calc(var(--spr-size) * 8) auto;
+  animation: spr-trot 0.56s steps(8) infinite;
+}
+@keyframes spr-trot {
+  to { background-position-x: calc(var(--spr-size) * -8); }
+}
+
+.spr-horse-piaffe {
+  background-image: url(../assets/horse-piaffe-sprite.svg);
+  background-size: calc(var(--spr-size) * 6) auto;
+  animation: spr-piaffe 0.9s steps(6) infinite;
+}
+@keyframes spr-piaffe {
+  to { background-position-x: calc(var(--spr-size) * -6); }
+}
+
+.spr-horse-idle {
+  background-image: url(../assets/horse-idle.svg);
+  background-size: calc(var(--spr-size) * 4) auto;
+  /* no keyframes: horse.js steps blink / tail-flick / ears frames */
+}
+
+/* --- page-transition curtain (DR.horseTransition) ------------------------ */
+
+.pp-curtain {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  overflow: hidden;
+  pointer-events: none;
+}
+.pp-curtain__panel {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 170vw;
+  background: var(--brand, #7a4a21);
+  border-right: 8px solid var(--gold, #e8a33d);
+  will-change: transform;
+  transform: translateX(-170vw);
+}
+.pp-curtain__panel::after {
+  /* second pixel stripe on the leading edge */
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  right: -4px;
+  width: 4px;
+  background: var(--panel, #f6ead2);
+}
+.pp-curtain__horse {
+  position: absolute;
+  right: 14px;
+  top: 38%;
+  --spr-size: 96px;
+  animation-duration: 0.45s; /* brisk medium trot for the crossing */
+}
+.pp-fade {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  pointer-events: none;
+  background: var(--bg, #efe2c4);
+  opacity: 0;
+}
+
+/* --- gallop parade easter egg (DR.horseParade) ---------------------------- */
+
+.pp-parade {
+  position: fixed;
+  inset: 0;
+  z-index: 9998;
+  overflow: hidden;
+  pointer-events: none;
+}
+.pp-parade .spr-horse-trot {
+  position: absolute;
+  left: 0;
+  top: 0;
+  will-change: transform;
+  transform: translateX(-120vw);
+}
+
+/* --- idle horse mount (DR.horseIdleMount) --------------------------------- */
+
+.pp-idle {
+  display: inline-block;
+  line-height: 0;
+  cursor: pointer;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+.pp-idle:focus-visible {
+  outline: 3px solid var(--gold, #e8a33d);
+  outline-offset: 3px;
+}
+
+/* --- reduced motion: freeze loops on a dignified pose --------------------- */
+
+@media (prefers-reduced-motion: reduce) {
+  .spr-horse-trot,
+  .spr-horse-piaffe {
+    animation: none;
+  }
+}
