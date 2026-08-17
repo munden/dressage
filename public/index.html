@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Pixel Passage</title>
+  <meta name="description" content="Pixel Passage — dressage judging &amp; rider notebook. Halt at X. Salute.">
+  <meta name="theme-color" content="#efe3c6" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#241a12" media="(prefers-color-scheme: dark)">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Pixel Passage">
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="assets/logo.svg">
+
+  <!-- Fonts: Press Start 2P (headings) + VT323 (body), monospace fallbacks -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Press+Start+2P&amp;family=VT323&amp;display=swap">
+
+  <link rel="stylesheet" href="css/pixel.css">
+  <link rel="stylesheet" href="css/sprites.css">
+</head>
+<body>
+  <div id="app" aria-live="polite">
+    <div class="boot-splash">
+      <div class="boot-mark crisp" aria-hidden="true">&#128052;</div>
+      <div class="boot-text">Dragging the arena&hellip;</div>
+    </div>
+  </div>
+
+  <!-- Load order is contractual: defaults -> fun -> horse -> app -> pages -->
+  <script src="/shared/defaults.js" defer></script>
+  <script src="js/fun.js" defer></script>
+  <script src="js/horse.js" defer></script>
+  <script src="js/app.js" defer></script>
+  <script src="js/pages/judge.js" defer></script>
+  <script src="js/pages/rider.js" defer></script>
+  <script src="js/pages/calendar.js" defer></script>
+  <script src="js/pages/admin.js" defer></script>
+</body>
+</html>
