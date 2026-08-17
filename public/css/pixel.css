@@ -502,6 +502,8 @@ label { font-family: var(--font-pix); font-size: 9px; letter-spacing: 0.5px; dis
   .tab-btn.active { box-shadow: inset -4px 0 0 var(--gold); }
   .shell-body {
     margin-left: calc(var(--rail-w) + var(--sal));
+    /* shrink by the rail width so the grid never overflows the viewport */
+    width: calc(100% - var(--rail-w) - var(--sal));
     max-width: calc(1180px + var(--rail-w));
     padding-bottom: 28px;
     padding-left: 22px;
